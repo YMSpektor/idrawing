@@ -1,0 +1,26 @@
+{
+  "name": "idrawing",
+  "version": "0.0.1",
+  "description": "",
+  "main": "index.js",
+  "types": "build/index.d.ts",
+  "scripts": {
+    "tsc": "tsc",
+    "dev": "ts-node-dev --respawn --transpileOnly ./src/index.ts",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/YMSpektor/idrawing.git"
+  },
+  "author": "Yuri Spektor",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/YMSpektor/idrawing/issues"
+  },
+  "homepage": "https://github.com/YMSpektor/idrawing#readme",
+  "devDependencies": {
+    "ts-node-dev": "^1.0.0-pre.44",
+    "typescript": "^3.7.2"
+  }
+}
