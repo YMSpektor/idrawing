@@ -11,7 +11,7 @@ export interface IPath {
 }
 
 export interface IRegionData {
-    rect(x1: number, y1: number, x2: number, y2: number): void;
+    rect(x: number, y: number, width: number, height: number): void;
     circle(cx: number, cy: number, r: number): void;
     ellipse(cx: number, cy: number, rx: number, ry: number): void;
     polygon(pts: Point[]): void;
@@ -26,7 +26,7 @@ export interface IRegion {
 
 export interface IDrawing {
     line(x1: number, y1: number, x2: number, y2: number, attributes?: Attributes): void;
-    rect(x1: number, y1: number, x2: number, y2: number, attributes?: Attributes): void;
+    rect(x: number, y: number, width: number, height: number, attributes?: Attributes): void;
     circle(cx: number, cy: number, r: number, attributes?: Attributes): void;
     ellipse(cx: number, cy: number, rx: number, ry: number, attributes?: Attributes): void;
     polyline(pts: Point[], attributes?: Attributes): void;

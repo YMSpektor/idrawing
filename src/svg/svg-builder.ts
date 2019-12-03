@@ -21,12 +21,12 @@ export abstract class AbstractSvgBuilder {
         this.currentNode.add(new SvgNode('line', attributes));
     }
 
-    rect(x1: number, y1: number, x2: number, y2: number, attributes?: Attributes): void {
+    rect(x: number, y: number, width: number, height: number, attributes?: Attributes): void {
         attributes = attributes || {};
-        attributes.x = x1;
-        attributes.y = y1;
-        attributes.width = x2 - x1;
-        attributes.height = y2 - y1;
+        attributes.x = x;
+        attributes.y = y;
+        attributes.width = width;
+        attributes.height = height;
         this.currentNode.add(new SvgNode('rect', attributes));
     }
 
@@ -86,7 +86,7 @@ export abstract class AbstractSvgBuilder {
             const bounds = region.getBounds();
             attributes = attributes || {};
             attributes.style = `stroke: none`;
-            this.rect(bounds.x1, bounds.y1, bounds.x2, bounds.y2, attributes);
+            this.rect(bounds.x1, bounds.y1, bounds.x2 - bounds.x1, bounds.y2 - bounds.y1, attributes);
         });
     }
 

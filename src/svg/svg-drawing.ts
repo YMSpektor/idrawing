@@ -26,8 +26,7 @@ export class SvgDrawing extends AbstractSvgBuilder implements IDrawing {
 
     createRegion(): IRegion {
         const id = this.generateRegionId();
-        const node = new SvgNode('mask', {id: id});
-        return new SvgRegion(this, node, id);
+        return new SvgRegion(this, id);
     }
 
     createPath(): IPath {

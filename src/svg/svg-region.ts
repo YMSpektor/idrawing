@@ -22,10 +22,10 @@ class SvgRegionData implements IRegionData {
         }
     }
 
-    rect(x1: number, y1: number, x2: number, y2: number): void {
-        this.addPoint(x1, y1);
-        this.addPoint(x2, y2);
-        this.builder.rect(x1, y1, x2, y2, {stroke: 'none', fill: this.fill});
+    rect(x: number, y: number, width: number, height: number): void {
+        this.addPoint(x, y);
+        this.addPoint(x + width, y + height);
+        this.builder.rect(x, y, width, height, {stroke: 'none', fill: this.fill});
     }
 
     circle(cx: number, cy: number, r: number): void {
@@ -58,10 +58,12 @@ class SvgRegionData implements IRegionData {
 export class SvgRegion implements IRegion {
     private includes: SvgRegionData;
     private excludes: SvgRegionData;
+    root: SvgNode;
 
-    constructor(drawing: SvgDrawing, public root: SvgNode, public id: string) { 
-        this.includes = new SvgRegionData(drawing, root, '#fff');
-        this.excludes = new SvgRegionData(drawing, root, '#000');
+    constructor(drawing: SvgDrawing, public id: string) {
+        this.root = new SvgNode('mask', {id: id});
+        this.includes = new SvgRegionData(drawing, this.root, '#fff');
+        this.excludes = new SvgRegionData(drawing, this.root, '#000');
     }
 
     include(callback: (r: IRegionData) => void): void {
