@@ -1,9 +1,11 @@
-import { Attributes, Point, Alignment, Region } from "..";
+import { Attributes, Point, Alignment } from "..";
 import { SvgNode } from "./svg-node";
 import { svgPathPolybezier, svgPathCurve } from "./svg-path-helper";
 import { SvgRegion } from "./svg-region";
+import { SvgDrawing } from "./svg-drawing";
+import { IRegion, IPath } from "../idrawing";
 
-export class SvgBuilder {
+export abstract class AbstractSvgBuilder {
     private currentNode: SvgNode;
 
     constructor(public root: SvgNode) {
@@ -30,16 +32,16 @@ export class SvgBuilder {
 
     circle(cx: number, cy: number, r: number, attributes?: Attributes): void {
         attributes = attributes || {};
-        attributes.x = cx;
-        attributes.y = cy;
+        attributes.cx = cx;
+        attributes.cy = cy;
         attributes.r = r;
         this.currentNode.add(new SvgNode('circle', attributes));
     }
 
     ellipse(cx: number, cy: number, rx: number, ry: number, attributes?: Attributes): void {
         attributes = attributes || {};
-        attributes.x = cx;
-        attributes.y = cy;
+        attributes.cx = cx;
+        attributes.cy = cy;
         attributes.rx = rx;
         attributes.ry = ry;
         this.currentNode.add(new SvgNode('ellipse', attributes));
@@ -79,8 +81,48 @@ export class SvgBuilder {
         this.currentNode.add(textNode);
     }
 
-    createRegion(): Region {
-        const node = new SvgNode('mask');
-        return new SvgRegion(node);
+    region(region: IRegion, attributes?: Attributes): void {
+        this.clip(region, () => {
+            const bounds = region.getBounds();
+            attributes = attributes || {};
+            attributes.style = `stroke: none`;
+            this.rect(bounds.x1, bounds.y1, bounds.x2, bounds.y2, attributes);
+        });
+    }
+
+    path(path: IPath, attributes?: Attributes): void {
+        throw new Error("Method not implemented."); // TODO
+    }
+
+    public abstract createRegion(): IRegion;
+    public abstract createPath(): IPath;
+    
+    clip(region: IRegion, callback: () => void) {
+        const svgRegion = region as SvgRegion;
+        const g = new SvgNode('g', {mask: `url(#${svgRegion.id})`});
+        g.add(svgRegion.root);
+        this.currentNode.add(g);
+        const oldCurrentNode = this.currentNode;
+        this.currentNode = g;
+        try {
+            callback();
+        }
+        finally {
+            this.currentNode = oldCurrentNode;
+        }
+    }
+}
+
+export class SvgBuilder extends AbstractSvgBuilder {
+    constructor(public drawing: SvgDrawing, root: SvgNode) {
+        super(root);
+    }
+
+    public createRegion(): IRegion {
+        return this.drawing.createRegion();
+    }
+
+    public createPath(): IPath {
+        return this.drawing.createPath();
     }
 }

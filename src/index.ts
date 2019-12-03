@@ -1,6 +1,2 @@
-export { Attributes } from "./common/attributes";
-export { Point } from "./common/point";
-export { Alignment } from "./common/alignment";
-export { Region, RegionData } from "./common/region";
-
-export { IDrawing } from "./idrawing";
+export { Attributes, Point, Alignment, Bounds } from "./common";
+export { IDrawing, IRegion, IPath, IRegionData } from "./idrawing";
