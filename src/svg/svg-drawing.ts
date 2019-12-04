@@ -2,9 +2,11 @@ import { AbstractSvgBuilder } from "./svg-builder";
 import { SvgNode } from "./svg-node";
 import { IDrawing, IRegion, IPath } from "..";
 import { SvgRegion } from "./svg-region";
+import { SvgPath } from "./svg-path";
 
 export class SvgDrawing extends AbstractSvgBuilder implements IDrawing {
     private nextRegionId = 0;
+    private nextPathId = 0;
     private defs: SvgNode;
     private styles: SvgNode;
 
@@ -24,13 +26,22 @@ export class SvgDrawing extends AbstractSvgBuilder implements IDrawing {
         return `rg_${this.nextRegionId++}`;
     }
 
+    private generatePathId(): string {
+        return `path_${this.nextPathId++}`;
+    }
+
     createRegion(): IRegion {
         const id = this.generateRegionId();
-        return new SvgRegion(this, id);
+        const region = new SvgRegion(this, id);
+        this.defs.add(region.root);
+        return region;
     }
 
     createPath(): IPath {
-        throw new Error("Method not implemented.");
+        const id = this.generatePathId();
+        const path = new SvgPath(id);
+        this.defs.add(path.root);
+        return path;
     }
 
     addPattern(svgPattern: string | SvgNode) {

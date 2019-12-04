@@ -5,7 +5,7 @@ export interface IPath {
     line(x: number, y: number): void;
     polyline(pts: Point[]): void;
     polybezier(pts: Point[]): void;
-    curve(pts: Point[]): void;
+    curve(pts: Point[], smoothing: number): void;
 
     close(): void;
 }
@@ -22,6 +22,7 @@ export interface IRegion {
     include(callback: (r: IRegionData) => void): void;
     exclude(callback: (r: IRegionData) => void): void;
     getBounds(): Bounds;
+    outline(): IPath[];
 }
 
 export interface IDrawing {

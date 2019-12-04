@@ -1,4 +1,7 @@
-import { IRegion, IRegionData, Point, Bounds } from "..";
+import * as PolygonClipping from 'polygon-clipping';
+import { MultiPolygon, Polygon, Pair } from 'polygon-clipping';
+
+import { IRegion, IRegionData, Point, Bounds, IPath, Geometry } from "..";
 import { SvgDrawing } from ".";
 import { SvgBuilder } from "./svg-builder";
 import { SvgNode } from "./svg-node";
@@ -6,6 +9,7 @@ import { SvgNode } from "./svg-node";
 class SvgRegionData implements IRegionData {
     private builder: SvgBuilder;
     private bounds?: Bounds;
+    private polygons: MultiPolygon = [];
 
     constructor(drawing: SvgDrawing, root: SvgNode, private fill: string) {
         this.builder = new SvgBuilder(drawing, root);
@@ -22,36 +26,51 @@ class SvgRegionData implements IRegionData {
         }
     }
 
+    private ptsToPolygon(pts: Point[]): Polygon {
+        return [pts.map(p => [p.x, p.y] as Pair)];
+    }
+
     rect(x: number, y: number, width: number, height: number): void {
         this.addPoint(x, y);
         this.addPoint(x + width, y + height);
         this.builder.rect(x, y, width, height, {stroke: 'none', fill: this.fill});
+        this.polygons = PolygonClipping.union(this.polygons, [[[x,y],[x + width,y],[x + width,y + height],[x,y + height]]]);
     }
 
     circle(cx: number, cy: number, r: number): void {
         this.addPoint(cx - r, cy - r);
         this.addPoint(cx + r, cy + r);
         this.builder.circle(cx, cy, r, {stroke: 'none', fill: this.fill});
+        this.polygons = PolygonClipping.union(this.polygons, this.ptsToPolygon(Geometry.approximateEllipse(cx, cy, r, r, 16)));
     }
 
     ellipse(cx: number, cy: number, rx: number, ry: number): void {
         this.addPoint(cx - rx, cy - ry);
         this.addPoint(cx + rx, cy + ry);
         this.builder.ellipse(cx, cy, rx, ry, {stroke: 'none', fill: this.fill});
+        this.polygons = PolygonClipping.union(this.polygons, this.ptsToPolygon(Geometry.approximateEllipse(cx, cy, rx, ry, 16)));
     }
 
     polygon(pts: Point[]): void {
         pts.forEach(x => this.addPoint(x.x, x.y));
         this.builder.polygon(pts, {stroke: 'none', fill: this.fill});
+        this.polygons = PolygonClipping.union(this.polygons, this.ptsToPolygon(pts));
     }
 
     closedCurve(pts: Point[], smoothing?: number): void {
-        pts.forEach(x => this.addPoint(x.x, x.y)); // TODO: calculate bounds more accurate
-        this.builder.curve(pts, true, smoothing, {stroke: 'none', fill: this.fill});
+        pts = Geometry.curveToPolybezier(pts, true, smoothing);
+        const approxPts = Geometry.approximatePolybezier(pts, 1);
+        approxPts.forEach(x => this.addPoint(x.x, x.y));
+        this.builder.polybezier(pts, {stroke: 'none', fill: this.fill});
+        this.polygons = PolygonClipping.union(this.polygons, this.ptsToPolygon(approxPts));
     }
 
     getBounds(): Bounds {
         return this.bounds || {x1: 0, y1: 0, x2: 0, y2: 0};
+    }
+
+    getPolygons(): MultiPolygon {
+        return this.polygons;
     }
 }
 
@@ -60,7 +79,7 @@ export class SvgRegion implements IRegion {
     private excludes: SvgRegionData;
     root: SvgNode;
 
-    constructor(drawing: SvgDrawing, public id: string) {
+    constructor(private drawing: SvgDrawing, public id: string) {
         this.root = new SvgNode('mask', {id: id});
         this.includes = new SvgRegionData(drawing, this.root, '#fff');
         this.excludes = new SvgRegionData(drawing, this.root, '#000');
@@ -76,5 +95,20 @@ export class SvgRegion implements IRegion {
 
     getBounds(): Bounds {
         return this.includes.getBounds();
+    }
+
+    outline(): IPath[] {
+        const polygons = PolygonClipping.difference(this.includes.getPolygons(), this.excludes.getPolygons());
+        return polygons.map(polygon => {
+            return polygon.map(ring => {
+                const path = this.drawing.createPath();
+                if (ring.length) {
+                    path.move(ring[0][0], ring[0][1]);
+                    path.polyline(ring.slice(1).map(pair => ({x: pair[0], y: pair[1]})));
+                    path.close();
+                }
+                return path;
+            });
+        }).reduce((acc, paths) => acc.concat(paths), []);
     }
 }

@@ -1,9 +1,10 @@
 import { Attributes, Point, Alignment } from "..";
 import { SvgNode } from "./svg-node";
-import { svgPathPolybezier, svgPathCurve } from "./svg-path-helper";
 import { SvgRegion } from "./svg-region";
 import { SvgDrawing } from "./svg-drawing";
 import { IRegion, IPath } from "../idrawing";
+import { SvgPath } from "./svg-path";
+import { Geometry } from "../utils";
 
 export abstract class AbstractSvgBuilder {
     private currentNode: SvgNode;
@@ -61,14 +62,16 @@ export abstract class AbstractSvgBuilder {
 
     polybezier(pts: Point[], attributes?: Attributes): void {
         attributes = attributes || {};
-        attributes.d = svgPathPolybezier(pts);
+        attributes.d = pts.reduce((acc, point, i) => i === 0
+            ? `M${point.x},${point.y}`
+            : `${acc} ${(i - 1) % 3 === 0 ? 'C' : ''}${point.x},${point.y}`
+        , '');
         this.currentNode.add(new SvgNode('path', attributes));
     }
 
-    curve(pts: Point[], closed?: boolean, smoothing?: number, attributes?: Attributes): void {
-        attributes = attributes || {};
-        attributes.d = svgPathCurve(pts, closed, smoothing);
-        this.currentNode.add(new SvgNode('path', attributes));
+    curve(pts: Point[], closed: boolean = false, smoothing: number = 0.25, attributes?: Attributes): void {
+        pts = Geometry.curveToPolybezier(pts, closed, smoothing);
+        this.polybezier(pts, attributes);
     }
 
     text(text: string, x: number, y: number, align: Alignment, attributes?: Attributes): void {
@@ -91,7 +94,10 @@ export abstract class AbstractSvgBuilder {
     }
 
     path(path: IPath, attributes?: Attributes): void {
-        throw new Error("Method not implemented."); // TODO
+        const svgPath = path as SvgPath;
+        attributes = attributes || {};
+        const pathNode = new SvgNode('use', {...attributes, 'xlink:href': `#${svgPath.id}`});
+        this.currentNode.add(pathNode);
     }
 
     public abstract createRegion(): IRegion;
@@ -100,7 +106,6 @@ export abstract class AbstractSvgBuilder {
     clip(region: IRegion, callback: () => void) {
         const svgRegion = region as SvgRegion;
         const g = new SvgNode('g', {mask: `url(#${svgRegion.id})`});
-        g.add(svgRegion.root);
         this.currentNode.add(g);
         const oldCurrentNode = this.currentNode;
         this.currentNode = g;
