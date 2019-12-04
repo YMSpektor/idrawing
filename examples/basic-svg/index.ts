@@ -23,6 +23,12 @@ svg.curve([
     {x: 100, y: 200}
 ], true, 0.25, {fill: 'url(#clay)', stroke: '#000'});
 */
+const path = svg.createPath();
+path.move(300, 300);
+path.curve([
+    {x: 350, y: 200},
+    {x: 400, y: 300}
+], 0.25);
 const region = svg.createRegion();
 region.include((r) => {
     r.closedCurve([
@@ -33,10 +39,12 @@ region.include((r) => {
     ]);
     r.rect(10, 10, 100, 100);
     r.ellipse(90, 40, 50, 20);
+    r.path(path);
 });
 region.exclude((r) => r.circle(40, 40, 10));
 const paths = region.outline();
 svg.region(region, {fill: 'url(#clay)'});
+//svg.path(path, {stroke: '#000', fill: 'none'});
 paths.forEach(path => svg.path(path, {stroke: '#000', fill: 'none'}));
 
 console.log(svg.toString());

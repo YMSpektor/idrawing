@@ -5,6 +5,7 @@ import { IRegion, IRegionData, Point, Bounds, IPath, Geometry } from "..";
 import { SvgDrawing } from ".";
 import { SvgBuilder } from "./svg-builder";
 import { SvgNode } from "./svg-node";
+import { SvgPath } from './svg-path';
 
 class SvgRegionData implements IRegionData {
     private builder: SvgBuilder;
@@ -34,27 +35,27 @@ class SvgRegionData implements IRegionData {
         this.addPoint(x, y);
         this.addPoint(x + width, y + height);
         this.builder.rect(x, y, width, height, {stroke: 'none', fill: this.fill});
-        this.polygons = PolygonClipping.union(this.polygons, [[[x,y],[x + width,y],[x + width,y + height],[x,y + height]]]);
+        this.polygons.push([[[x,y],[x + width,y],[x + width,y + height],[x,y + height]]]);
     }
 
     circle(cx: number, cy: number, r: number): void {
         this.addPoint(cx - r, cy - r);
         this.addPoint(cx + r, cy + r);
         this.builder.circle(cx, cy, r, {stroke: 'none', fill: this.fill});
-        this.polygons = PolygonClipping.union(this.polygons, this.ptsToPolygon(Geometry.approximateEllipse(cx, cy, r, r, 16)));
+        this.polygons.push(this.ptsToPolygon(Geometry.approximateEllipse(cx, cy, r, r, 16)));
     }
 
     ellipse(cx: number, cy: number, rx: number, ry: number): void {
         this.addPoint(cx - rx, cy - ry);
         this.addPoint(cx + rx, cy + ry);
         this.builder.ellipse(cx, cy, rx, ry, {stroke: 'none', fill: this.fill});
-        this.polygons = PolygonClipping.union(this.polygons, this.ptsToPolygon(Geometry.approximateEllipse(cx, cy, rx, ry, 16)));
+        this.polygons.push(this.ptsToPolygon(Geometry.approximateEllipse(cx, cy, rx, ry, 16)));
     }
 
     polygon(pts: Point[]): void {
         pts.forEach(x => this.addPoint(x.x, x.y));
         this.builder.polygon(pts, {stroke: 'none', fill: this.fill});
-        this.polygons = PolygonClipping.union(this.polygons, this.ptsToPolygon(pts));
+        this.polygons.push(this.ptsToPolygon(pts));
     }
 
     closedCurve(pts: Point[], smoothing?: number): void {
@@ -62,7 +63,19 @@ class SvgRegionData implements IRegionData {
         const approxPts = Geometry.approximatePolybezier(pts, 1);
         approxPts.forEach(x => this.addPoint(x.x, x.y));
         this.builder.polybezier(pts, {stroke: 'none', fill: this.fill});
-        this.polygons = PolygonClipping.union(this.polygons, this.ptsToPolygon(approxPts));
+        this.polygons.push(this.ptsToPolygon(approxPts));
+    }
+
+    path(path: IPath): void {
+        this.builder.path(path, {stroke: 'none', fill: this.fill});
+        const svgPath = path as SvgPath;
+        const pathPolygons = svgPath.getPolygons();
+        pathPolygons.forEach(polygon => {
+            polygon.forEach(ring => {
+                ring.forEach(pair => this.addPoint(pair[0], pair[1]));
+            })
+        });
+        this.polygons.push(...pathPolygons);
     }
 
     getBounds(): Bounds {
@@ -70,7 +83,7 @@ class SvgRegionData implements IRegionData {
     }
 
     getPolygons(): MultiPolygon {
-        return this.polygons;
+        return this.polygons.length <= 1 ? this.polygons : PolygonClipping.union(this.polygons[0], ...this.polygons.slice(1));
     }
 }
 

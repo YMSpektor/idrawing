@@ -16,6 +16,7 @@ export interface IRegionData {
     ellipse(cx: number, cy: number, rx: number, ry: number): void;
     polygon(pts: Point[]): void;
     closedCurve(pts: Point[], smoothing?: number): void;
+    path(path: IPath): void;
 }
 
 export interface IRegion {
