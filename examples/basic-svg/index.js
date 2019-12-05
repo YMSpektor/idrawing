@@ -1,4 +1,4 @@
-const { SvgDrawing } = require('../../dist');
+const { SvgDrawing } = require('../../dist/svg');
 const fs = require('fs');
 
 function draw(drawing) {
@@ -12,7 +12,7 @@ function draw(drawing) {
   );
   drawing.region(region, {fill: 'red'});
   const paths = region.outline();
-  paths.forEach(path => svg.path(path, {stroke: '#000', fill: 'none'}));
+  paths.forEach(path => drawing.path(path, {stroke: '#000', fill: 'none'}));
 }
 
 const svg = new SvgDrawing();
