@@ -3,7 +3,7 @@ import { MultiPolygon, Ring, Pair } from 'polygon-clipping';
 
 import { IPath, Point } from "..";
 import { Geometry } from "../utils";
-import { SvgNode } from "../../dist/svg";
+import { SvgNode } from './svg-node';
 
 export class SvgPath implements IPath {
     private initialPoint?: Point;

@@ -1,0 +1,1 @@
+const basicSvg = require('./basic-svg');
