@@ -12,7 +12,7 @@ export class DxfTextWriter implements DxfWriter {
     writeGroup(code: number, value: number | string): void {
         this.writeLine(code.toString().padStart(3, ' '));
         if (typeof value === 'number' && !Number.isInteger(value)) {
-            value = value.toFixed(2);
+            value = value.toFixed(4);
         }
         this.writeLine(value);
     }

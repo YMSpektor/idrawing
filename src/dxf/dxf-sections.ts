@@ -1,11 +1,8 @@
-import { DxfNode } from "./dxf-node";
 import { DxfWriter } from "./dxf-writer";
 import { DxfWritable } from "./dxf-writable";
-import { Table } from "./entities/table";
 
-export abstract class DxfSection extends DxfNode implements DxfWritable {
+export abstract class AbstractDxfSection implements DxfWritable {
     constructor(public name: string) {
-        super();
     }
 
     public writeDxf(writer: DxfWriter): void {
@@ -20,7 +17,7 @@ export abstract class DxfSection extends DxfNode implements DxfWritable {
 
 export type DxfHeaderVariableGroups = Map<number, string | number>;
 
-export class DxfHeaderSection extends DxfSection {
+export class DxfHeaderSection extends AbstractDxfSection {
     variables: {[name: string]: DxfHeaderVariableGroups} = {};
 
     constructor() {
@@ -36,23 +33,10 @@ export class DxfHeaderSection extends DxfSection {
     }
 }
 
-export class DxfClassesSection extends DxfSection {
-    constructor() {
-        super('CLASSES');
-    }
+export class DxfSection extends AbstractDxfSection {
+    public entities: DxfWritable[] = [];
 
     protected writeSection(writer: DxfWriter): void {
-    }
-}
-
-export class DxfTablesSection extends DxfSection {
-    tables: Table<any>[] = [];
-
-    constructor() {
-        super('TABLES');
-    }
-
-    protected writeSection(writer: DxfWriter): void {
-        this.tables.forEach(x => x.writeDxf(writer));
+        this.entities.forEach(x => x.writeDxf(writer));
     }
 }

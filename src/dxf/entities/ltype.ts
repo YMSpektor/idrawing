@@ -2,6 +2,10 @@ import { TableRecord } from "./table";
 import { DxfWriter } from "..";
 
 export class LType extends TableRecord {
+    public static BY_LAYER = 'ByLayer';
+    public static BY_BLOCK = 'ByBlock';
+    public static CONTINUOUS = 'Continuous';
+
     constructor(public name: string, handle: string, public ownerHandle: string, public dashes: number[] = []) {
         super('LTYPE', handle, ownerHandle);
     }
