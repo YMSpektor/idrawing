@@ -1,7 +1,7 @@
-import { DxfWritable } from "../dxf-writable";
+import { DxfObject } from "../dxf-object";
 import { DxfWriter } from "..";
 
-export class Table implements DxfWritable {
+export class Table implements DxfObject {
     entries: TableRecord[] = [];
 
     constructor(public name: string, public handle: string) { }
@@ -10,7 +10,7 @@ export class Table implements DxfWritable {
         writer.writeGroup(0, 'TABLE');
         writer.writeGroup(2, this.name);
         writer.writeGroup(5, this.handle);
-        writer.writeGroup(330, this.handle);
+        writer.writeGroup(330, 0);
         writer.writeGroup(100, 'AcDbSymbolTable');
         writer.writeGroup(70, this.entries.length);
         this.writeTableDetails(writer);
@@ -32,7 +32,7 @@ export class DimStyleTable extends Table {
     }
 }
 
-export abstract class TableRecord implements DxfWritable {
+export abstract class TableRecord implements DxfObject {
     constructor(public recordName: string, public handle: string, public ownerHandle: string) {
     }
 

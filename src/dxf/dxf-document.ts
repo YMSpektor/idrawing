@@ -1,37 +1,37 @@
-import { DxfHeaderSection, DxfSection } from "./dxf-sections";
 import { DxfWriter } from "./dxf-writer";
-import { DxfWritable } from "./dxf-writable";
-import { Table, LType, Layer, Style, AppId, DimStyle, BlockRecord, Block, BlockEnd } from "./entities";
-import { DimStyleTable } from "./entities/table";
+import { Section, Table, LType, Layer, Style, AppId, BlockRecord, Block, BlockEnd, DimStyleTable, Dictionary, Entity } from "./entities";
+import { HeaderVariable } from "./entities/header-variables";
 
-export class DxfDocument implements DxfWritable {
+export class DxfDocument {
     private _nextHandle = 256;
-    private header = new DxfHeaderSection();
-    private classes = new DxfSection('CLASSES');
-    private tables = new DxfSection('TABLES');
-    private blocks = new DxfSection('BLOCKS');
-    private entities = new DxfSection('ENTITIES');
-    private objects = new DxfSection('OBJECTS');
+    private header = new Section('HEADER');
+    private classes = new Section('CLASSES');
+    private tables = new Section('TABLES');
+    private blocks = new Section('BLOCKS');
+    private entities = new Section('ENTITIES');
+    private objects = new Section('OBJECTS');
+    private layerTable: Table;
     private blockRecTable: Table;
+    private ltypeTable: Table;
+    private styleTable: Table;
 
     constructor() {
-        this.header.variables['$ACADVER'] = new Map([[1, 'AC1021']]);
+        this.addHeaderVariable(
+            new HeaderVariable('$ACADVER', new Map([[1, 'AC1021']]))
+        );
 
         const vportTable = new Table('VPORT', this.nextHandle());
 
-        const ltypeTable = new Table('LTYPE', this.nextHandle());
-        const byBlock = new LType(LType.BY_BLOCK, this.nextHandle(), ltypeTable.handle);
-        const byLayer = new LType(LType.BY_LAYER, this.nextHandle(), ltypeTable.handle);
-        const continuous = new LType(LType.CONTINUOUS, this.nextHandle(), ltypeTable.handle);
-        ltypeTable.entries.push(byBlock, byLayer, continuous);
+        this.ltypeTable = new Table('LTYPE', this.nextHandle());
+        this.addLineType(LType.BY_BLOCK);
+        this.addLineType(LType.BY_LAYER);
+        this.addLineType(LType.CONTINUOUS);
 
-        const layerTable = new Table('LAYER', this.nextHandle());
-        const layer0 = new Layer(Layer.LAYER_0, this.nextHandle(), layerTable.handle);
-        layerTable.entries.push(layer0);
+        this.layerTable = new Table('LAYER', this.nextHandle());
+        this.addLayer(Layer.LAYER_0);
 
-        const styleTable = new Table('STYLE', this.nextHandle());
-        const standard = new Style(Style.STANDARD, this.nextHandle(), styleTable.handle);
-        styleTable.entries.push(standard);
+        this.styleTable = new Table('STYLE', this.nextHandle());
+        this.addStyle(Style.STANDARD);
 
         const viewTable = new Table('VIEW', this.nextHandle());
 
@@ -42,32 +42,66 @@ export class DxfDocument implements DxfWritable {
         appIdTable.entries.push(acad);
 
         const dimstyleTable = new DimStyleTable(this.nextHandle());
-        const standardDimStyle = new DimStyle(DimStyle.STANDARD, this.nextHandle(), dimstyleTable.handle, standard);
-        dimstyleTable.entries.push(standardDimStyle);
 
         this.blockRecTable = new Table('BLOCK_RECORD', this.nextHandle());
         this.addBlock(BlockRecord.MODEL_SPACE);
         this.addBlock(BlockRecord.PAPER_SPACE);
 
-        this.tables.entities.push(vportTable, ltypeTable, layerTable, styleTable, viewTable, ucsTable, appIdTable, dimstyleTable, this.blockRecTable);
+        this.tables.entities.push(vportTable, this.ltypeTable, this.layerTable, this.styleTable, viewTable, ucsTable, appIdTable, dimstyleTable, this.blockRecTable);
+
+        const mainDict = new Dictionary(this.nextHandle());
+        const acadGroup = new Dictionary(this.nextHandle(), mainDict.handle);
+        mainDict.entries[Dictionary.ACAD_GROUP] = acadGroup.handle;
+        this.objects.entities.push(mainDict, acadGroup);
     }
 
-    private addBlock(name: string) {
+    addHeaderVariable(variable: HeaderVariable) {
+        this.header.entities.push(variable);
+    }
+
+    addLayer(name: string): Layer {
+        const layer = new Layer(name, this.nextHandle(), this.layerTable.handle);
+        this.layerTable.entries.push(layer);
+        return layer;
+    }
+
+    addLineType(name: string, dashes?: number[]): LType {
+        const ltype = new LType(name, this.nextHandle(), this.ltypeTable.handle, dashes);
+        this.ltypeTable.entries.push(ltype);
+        return ltype;
+    }
+
+    addStyle(font: string): Style {
+        const style = new Style(font, this.nextHandle(), this.styleTable.handle);
+        this.styleTable.entries.push(style);
+        return style;
+    }
+
+    addBlock(name: string): Block {
         const blockRec = new BlockRecord(name, this.nextHandle(), this.blockRecTable.handle);
         this.blockRecTable.entries.push(blockRec);
         const block = new Block(name, this.nextHandle(), blockRec.handle);
         const blockEnd = new BlockEnd(this.nextHandle(), blockRec.handle);
         this.blocks.entities.push(block, blockEnd);
+        return block;
+    }
+
+    addEntity(entity: Entity) {
+        this.entities.entities.push(entity);
+    }
+
+    addEntities(...entities: Entity[]) {
+        entities.forEach(entity => this.addEntity(entity));
     }
 
     nextHandle(): string {
-        const handle = this._nextHandle;
-        this._nextHandle++;
-        return handle.toString(16).toUpperCase();
+        return (this._nextHandle++).toString(16).toUpperCase();
     }
 
     writeDxf(writer: DxfWriter) {
-        this.header.variables['$HANDSEED'] = new Map([[5, this._nextHandle.toString(16).toUpperCase()]]);
+        this.addHeaderVariable(
+            new HeaderVariable('$HANDSEED', new Map([[5, this._nextHandle.toString(16).toUpperCase()]]))
+        );
         this.header.writeDxf(writer);
         this.classes.writeDxf(writer);
         this.tables.writeDxf(writer);

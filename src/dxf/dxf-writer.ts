@@ -6,7 +6,7 @@ export class DxfTextWriter implements DxfWriter {
     text = '';
 
     private writeLine(s: string | number) {
-        this.text += `${s} \n`;
+        this.text += `${s}\n`;
     }
 
     writeGroup(code: number, value: number | string): void {

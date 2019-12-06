@@ -1,5 +1,5 @@
 import { DxfWriter } from ".";
 
-export interface DxfWritable {
+export interface DxfObject {
     writeDxf(writer: DxfWriter): void;
 }
