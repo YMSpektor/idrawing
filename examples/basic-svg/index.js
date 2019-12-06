@@ -1,4 +1,4 @@
-const { SvgDrawing } = require('../../dist/svg');
+const { SvgDrawing } = require('../../src/svg');
 const fs = require('fs');
 
 function draw(drawing) {

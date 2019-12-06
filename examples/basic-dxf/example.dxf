@@ -1,0 +1,64 @@
+  0 
+SECTION 
+  2 
+HEADER 
+  9 
+$ACADVER 
+  1 
+AC1021 
+  9 
+$HANDSEED 
+  5 
+102 
+  0 
+ENDSEC 
+  0 
+SECTION 
+  2 
+CLASSES 
+  0 
+ENDSEC 
+  0 
+SECTION 
+  2 
+TABLES 
+  0 
+TABLE 
+  2 
+LTYPE 
+  5 
+100 
+330 
+100 
+100 
+AcDbSymbolTable 
+ 70 
+1 
+  0 
+LTYPE 
+  5 
+101 
+330 
+100 
+100 
+AcDbSymbolTableRecord 
+100 
+AcDbLinetypeTableRecord 
+  2 
+ByBlock 
+ 70 
+0 
+  3 
+ 
+ 72 
+65 
+ 73 
+0 
+ 40 
+0 
+  0 
+ENDTAB 
+  0 
+ENDSEC 
+  0 
+EOF 

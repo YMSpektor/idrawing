@@ -1,7 +1,7 @@
 import * as PolygonClipping from 'polygon-clipping';
 import { MultiPolygon, Polygon, Pair } from 'polygon-clipping';
 
-import { IRegion, IRegionData, Point, Bounds, IPath, Geometry } from "..";
+import { IRegion, IRegionData, Point, Bounds, IPath, Geometry, DRAWING_SETTINGS } from "..";
 import { SvgDrawing } from ".";
 import { SvgBuilder } from "./svg-builder";
 import { SvgNode } from "./svg-node";
@@ -42,14 +42,14 @@ class SvgRegionData implements IRegionData {
         this.addPoint(cx - r, cy - r);
         this.addPoint(cx + r, cy + r);
         this.builder.circle(cx, cy, r, {stroke: 'none', fill: this.fill});
-        this.polygons.push(this.ptsToPolygon(Geometry.approximateEllipse(cx, cy, r, r, 16)));
+        this.polygons.push(this.ptsToPolygon(Geometry.approximateEllipse(cx, cy, r, r, DRAWING_SETTINGS.APPROX_ELLIPSE_LINES)));
     }
 
     ellipse(cx: number, cy: number, rx: number, ry: number): void {
         this.addPoint(cx - rx, cy - ry);
         this.addPoint(cx + rx, cy + ry);
         this.builder.ellipse(cx, cy, rx, ry, {stroke: 'none', fill: this.fill});
-        this.polygons.push(this.ptsToPolygon(Geometry.approximateEllipse(cx, cy, rx, ry, 16)));
+        this.polygons.push(this.ptsToPolygon(Geometry.approximateEllipse(cx, cy, rx, ry, DRAWING_SETTINGS.APPROX_ELLIPSE_LINES)));
     }
 
     polygon(pts: Point[]): void {
@@ -60,7 +60,7 @@ class SvgRegionData implements IRegionData {
 
     closedCurve(pts: Point[], smoothing?: number): void {
         pts = Geometry.curveToPolybezier(pts, true, smoothing);
-        const approxPts = Geometry.approximatePolybezier(pts, 1);
+        const approxPts = Geometry.approximatePolybezier(pts, DRAWING_SETTINGS.APPROX_CURVE_MAX_DEVIATION);
         approxPts.forEach(x => this.addPoint(x.x, x.y));
         this.builder.polybezier(pts, {stroke: 'none', fill: this.fill});
         this.polygons.push(this.ptsToPolygon(approxPts));

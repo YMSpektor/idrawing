@@ -1,7 +1,7 @@
 import * as PolygonClipping from 'polygon-clipping';
 import { MultiPolygon, Ring, Pair } from 'polygon-clipping';
 
-import { IPath, Point } from "..";
+import { IPath, Point, DRAWING_SETTINGS } from "..";
 import { Geometry } from "../utils";
 import { SvgNode } from './svg-node';
 
@@ -55,7 +55,7 @@ export class SvgPath implements IPath {
         pts.unshift(this.currentPoint);
         this.currentPoint = {x: pts[pts.length - 1].x, y: pts[pts.length - 1].y};
 
-        pts = Geometry.approximatePolybezier(pts, 1);
+        pts = Geometry.approximatePolybezier(pts, DRAWING_SETTINGS.APPROX_CURVE_MAX_DEVIATION);
         this.currentPolygon.push(...pts.map(p => [p.x, p.y] as Pair)); // Don't use concat, the currentPolygon reference should not change
     }
 
