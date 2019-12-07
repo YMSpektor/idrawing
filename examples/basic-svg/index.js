@@ -17,4 +17,4 @@ function draw(drawing) {
 
 const svg = new SvgDrawing();
 draw(svg);
-fs.writeFileSync(__dirname + '/example.svg', svg.toString());
+fs.writeFileSync(__dirname + '/example.svg', svg.svg());

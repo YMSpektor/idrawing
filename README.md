@@ -36,7 +36,7 @@ function draw(drawing) {
 
 const svg = new SvgDrawing();
 draw(svg);
-fs.writeFileSync(__dirname + '/example.svg', svg.toString());
+fs.writeFileSync(__dirname + '/example.svg', svg.svg());
 ```
 ### example.svg
 <img src="./examples/basic-svg/example.svg">

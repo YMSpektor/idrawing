@@ -10,11 +10,12 @@ export class SvgDrawing extends AbstractSvgBuilder implements IDrawing {
     private defs: SvgNode;
     private styles: SvgNode;
 
-    constructor () {
+    constructor (width: number, height: number) {
         super(new SvgNode('svg', {
-            'xmlns': 'http://www.w3.org/2000/svg',
             'version': '1.1',
-            'xmlns:xlink': "http://www.w3.org/1999/xlink"
+            'xmlns': 'http://www.w3.org/2000/svg',
+            'xmlns:xlink': 'http://www.w3.org/1999/xlink',
+            'viewBox': `0 0 ${width} ${height}`
         }));
         this.defs = new SvgNode('defs');
         this.root.add(this.defs);
@@ -52,7 +53,7 @@ export class SvgDrawing extends AbstractSvgBuilder implements IDrawing {
         this.styles.add(svgStyle);
     }
 
-    toString(): string {
+    svg(): string {
         return this.root.toString();
     }
 }
