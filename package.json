@@ -1,6 +1,6 @@
 {
   "name": "idrawing",
-  "version": "0.0.1",
+  "version": "0.1.0",
   "description": "Provides a common abstract interface for drawing. The resulting format depends on the chosen interface implementation (SVG, DXF - planned)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
@@ -22,9 +22,12 @@
   "devDependencies": {
     "nodemon": "^2.0.1",
     "ts-node": "^8.5.4",
-    "typescript": "^3.7.2"
+    "typescript": "^3.7.2",
+    "@types/line-reader": "0.0.28",
+    "@types/node": "^12.12.14"
   },
   "dependencies": {
+    "dxf-doc": "^0.1.0",
     "polygon-clipping": "^0.14.3"
   },
   "keywords": [
