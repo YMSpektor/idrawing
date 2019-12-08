@@ -27,7 +27,7 @@
     "typescript": "^3.7.3"
   },
   "dependencies": {
-    "dxf-doc": "^0.1.1",
+    "dxf-doc": "^0.1.2",
     "polygon-clipping": "^0.14.3"
   },
   "keywords": [
