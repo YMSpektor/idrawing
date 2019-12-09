@@ -1,8 +1,8 @@
 import { DxfDocument } from 'dxf-doc';
-import { Line, Entity, Hatch, Circle, Ellipse } from 'dxf-doc/entities';
+import { Line, Entity, Hatch, Circle, Ellipse, LwPolyline } from 'dxf-doc/entities';
+import { EdgeBoundaryPath, HatchPattern, PolylineBoundaryPath } from 'dxf-doc/entities/hatch';
 
-import { Attributes, Point, Alignment, IRegion, IPath } from '..';
-import { EdgeBoundaryPath, HatchPattern } from 'dxf-doc/entities/hatch';
+import { Attributes, Point, Alignment, IRegion, IPath, Geometry, DRAWING_SETTINGS } from '..';
 
 interface Style {
     stroke?: string;
@@ -144,19 +144,44 @@ export abstract class AbstractDxfBuilder {
     }
 
     polyline(pts: Point[], attributes?: Attributes | undefined): void {
-        throw new Error("Method not implemented.");
+        const style = this.getStyle(attributes);
+        if (style.stroke !== 'none') {
+            const entity = new LwPolyline(this.document, pts.map(p => [p.x, this.convertY(p.y)] as [number, number]), false);
+            entity.ltype = this.getLType(style);
+            entity.lineWeight = this.getLineWeight(style);
+            entity.color = this.getColor(style, 'stroke');
+            this.document.addEntity(entity);
+        }
     }
 
     polygon(pts: Point[], attributes?: Attributes | undefined): void {
-        throw new Error("Method not implemented.");
+        const style = this.getStyle(attributes);
+        const dxfPts = pts.map(p => [p.x, this.convertY(p.y)] as [number, number]);
+        if (style.fill) {
+            const patternName = this.getFillPattern(style);
+            const boundary = new PolylineBoundaryPath(dxfPts);
+            const pattern = patternName ? this.patterns.get(patternName) : undefined;
+            const entity = new Hatch(this.document, [boundary], pattern);
+            entity.color = this.getColor(style, 'fill');
+            this.document.addEntity(entity);
+        }
+        if (style.stroke !== 'none') {
+            const entity = new LwPolyline(this.document, dxfPts, true);
+            entity.ltype = this.getLType(style);
+            entity.lineWeight = this.getLineWeight(style);
+            entity.color = this.getColor(style, 'stroke');
+            this.document.addEntity(entity);
+        }
     }
     
     polybezier(pts: Point[], attributes?: Attributes | undefined): void {
-        throw new Error("Method not implemented.");
+        pts = Geometry.approximatePolybezier(pts, DRAWING_SETTINGS.APPROX_CURVE_MAX_DEVIATION);
+        this.polyline(pts);
     }
 
     curve(pts: Point[], closed?: boolean | undefined, smoothing?: number | undefined, attributes?: Attributes | undefined): void {
-        throw new Error("Method not implemented.");
+        pts = Geometry.curveToPolybezier(pts, closed || false, smoothing);
+        this.polybezier(pts);
     }
 
     text(text: string, x: number, y: number, align: Alignment, attributes?: Attributes | undefined): void {
