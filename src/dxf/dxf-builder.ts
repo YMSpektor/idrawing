@@ -1,14 +1,25 @@
 import { DxfDocument } from 'dxf-doc';
-import { Line, Entity, Hatch, Circle, Ellipse, LwPolyline } from 'dxf-doc/entities';
+import { Line, Hatch, Circle, Ellipse, LwPolyline } from 'dxf-doc/entities';
 import { EdgeBoundaryPath, HatchPattern, PolylineBoundaryPath } from 'dxf-doc/entities/hatch';
 
 import { Attributes, Point, Alignment, IRegion, IPath, Geometry, DRAWING_SETTINGS } from '..';
+
+enum FontStyle {
+    normal = 'normal',
+    italic = 'italic'
+};
 
 interface Style {
     stroke?: string;
     'stroke-width'?: number;
     'stroke-dasharray'?: number[];
+
     fill?: string;
+
+    'font-style'?: FontStyle;
+    'font-weight'?: string;
+    'font-family'?: string;
+    'font-size'?: number;
 }
 
 // http://gohtx.com/acadcolors.php
@@ -41,6 +52,29 @@ export abstract class AbstractDxfBuilder {
                 typeof attributes['stroke-dasharray'] === 'string' ? (attributes['stroke-dasharray'] + '').split(' ').map(x => +x) : undefined
                 : undefined;
             style.fill = attributes.fill;
+            
+            if (attributes.font) {
+                const match = (attributes.font + '').match(/((?:normal|italic)(?:\s))?((?:bold|bolder|\d+)(?:\s))?(\d+)\s(.+)/);
+                if (match) {
+                    style['font-style'] = match[1] as FontStyle;
+                    style['font-weight'] = match[2];
+                    style['font-size'] = +match[3];
+                    style['font-family'] = match[4];
+                }
+            }
+
+            if (attributes['font-style'] && Object.keys(FontStyle).includes(attributes['font-style'])) {
+                style['font-style'] = attributes['font-style']; 
+            }
+            if (attributes['font-weight']) {
+                style['font-weight'] = attributes['font-weight'];
+            }
+            if (attributes['font-size']) {
+                style['font-size'] = +attributes['font-weight'];
+            }
+            if (attributes['font-family']) {
+                style['font-family'] = attributes['font-family'];
+            }
         }
         return style;
     }
