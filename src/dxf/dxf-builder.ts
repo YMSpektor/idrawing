@@ -1,25 +1,20 @@
 import { DxfDocument } from 'dxf-doc';
-import { Line, Hatch, Circle, Ellipse, LwPolyline } from 'dxf-doc/entities';
+import { Line, Hatch, Circle, Ellipse, LwPolyline, Style as DfxTextStyle } from 'dxf-doc/entities';
 import { EdgeBoundaryPath, HatchPattern, PolylineBoundaryPath } from 'dxf-doc/entities/hatch';
 
 import { Attributes, Point, Alignment, IRegion, IPath, Geometry, DRAWING_SETTINGS } from '..';
 
-enum FontStyle {
-    normal = 'normal',
-    italic = 'italic'
-};
-
 interface Style {
     stroke?: string;
-    'stroke-width'?: number;
-    'stroke-dasharray'?: number[];
+    strokeWidth?: number;
+    strokeDashArray?: number[];
 
     fill?: string;
 
-    'font-style'?: FontStyle;
-    'font-weight'?: string;
-    'font-family'?: string;
-    'font-size'?: number;
+    fontItalic?: boolean;
+    fontBold?: boolean;
+    fontFamily?: string;
+    fontSize?: number;
 }
 
 // http://gohtx.com/acadcolors.php
@@ -39,6 +34,7 @@ const COLORS = [
 export abstract class AbstractDxfBuilder {
     private ltypes = new Set<string>();
     private patterns = new Map<string, HatchPattern>();
+    private textStyles = new Map<string, DfxTextStyle>();
 
     constructor(protected document: DxfDocument) { }
 
@@ -46,41 +42,37 @@ export abstract class AbstractDxfBuilder {
         const style: Style = {};
         if (attributes) {
             style.stroke = attributes.stroke;
-            style['stroke-width'] = attributes['stroke-width'] ? +attributes['stroke-width'] : attributes['stroke-width'];
-            style['stroke-dasharray'] = attributes['stroke-dasharray'] ? 
+            style.strokeWidth = attributes['stroke-width'] ? +attributes['stroke-width'] : attributes['stroke-width'];
+            style.strokeDashArray = attributes['stroke-dasharray'] ? 
                 Array.isArray(attributes['stroke-dasharray']) ? (attributes['stroke-dasharray'] as (number | string)[]).map(x => +x) : 
                 typeof attributes['stroke-dasharray'] === 'string' ? (attributes['stroke-dasharray'] + '').split(' ').map(x => +x) : undefined
                 : undefined;
             style.fill = attributes.fill;
             
             if (attributes.font) {
-                const match = (attributes.font + '').match(/((?:normal|italic)(?:\s))?((?:bold|bolder|\d+)(?:\s))?(\d+)\s(.+)/);
+                const match = (attributes.font + '').match(/(?:(normal|italic)\s)?(?:(normal|bold)\s)?(\d+)\s(.+)/);
                 if (match) {
-                    style['font-style'] = match[1] as FontStyle;
-                    style['font-weight'] = match[2];
-                    style['font-size'] = +match[3];
-                    style['font-family'] = match[4];
+                    style.fontItalic = match[1] === 'italic';
+                    style.fontBold = match[2] === 'bold';
+                    style.fontSize = +match[3];
+                    style.fontFamily = match[4];
                 }
             }
 
-            if (attributes['font-style'] && Object.keys(FontStyle).includes(attributes['font-style'])) {
-                style['font-style'] = attributes['font-style']; 
-            }
-            if (attributes['font-weight']) {
-                style['font-weight'] = attributes['font-weight'];
-            }
+            style.fontItalic = attributes['font-style'] === 'italic';
+            style.fontBold = attributes['font-weight'] === 'bold';
             if (attributes['font-size']) {
-                style['font-size'] = +attributes['font-weight'];
+                style.fontSize = +attributes['font-size'];
             }
             if (attributes['font-family']) {
-                style['font-family'] = attributes['font-family'];
+                style.fontFamily = attributes['font-family'];
             }
         }
         return style;
     }
 
     private getLType(style: Style): string | undefined {
-        const strokeDashArray = style['stroke-dasharray'];
+        const { strokeDashArray } = style;
         const result = strokeDashArray ? 'DASH_' + strokeDashArray.map(x => x.toFixed(2)).join('_') : undefined;
         if (result && !this.ltypes.has(result)) {
             this.document.addLineType(result, strokeDashArray);
@@ -90,7 +82,7 @@ export abstract class AbstractDxfBuilder {
     }
 
     private getLineWeight(style: Style): number | undefined {
-        const strokeWidth = style['stroke-width'];
+        const { strokeWidth } = style;
         return strokeWidth ? Math.round(strokeWidth * 100) : undefined;
     }
 
@@ -109,6 +101,17 @@ export abstract class AbstractDxfBuilder {
             }
         }
         return pattern;
+    }
+
+    private getTextStyle(style: Style): string {
+        const { fontFamily, fontItalic, fontBold } = style;
+        const baseName = fontFamily ? fontFamily : 'Standard';
+        const flags = `${fontBold ? 'b' : ''}${fontItalic ? 'i' : ''}`;
+        const result = flags ? `${baseName}_${flags}` : baseName;
+        if (result !== 'Standard' && !this.textStyles.has(result)) {
+            //this.document.addStyle(result, fontFamily, fontItalic, fontBold);
+        }
+        return result;
     }
 
     protected abstract convertY(y: number): number;
