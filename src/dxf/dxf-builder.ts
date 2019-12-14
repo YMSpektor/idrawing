@@ -1,5 +1,5 @@
 import { DxfDocument } from 'dxf-doc';
-import { Line, Hatch, Circle, Ellipse, LwPolyline, Style as DfxTextStyle } from 'dxf-doc/entities';
+import { Line, Hatch, Circle, Ellipse, LwPolyline, Style as DfxTextStyle, Text } from 'dxf-doc/entities';
 import { EdgeBoundaryPath, HatchPattern, PolylineBoundaryPath } from 'dxf-doc/entities/hatch';
 
 import { Attributes, Point, Alignment, IRegion, IPath, Geometry, DRAWING_SETTINGS } from '..';
@@ -88,6 +88,9 @@ export abstract class AbstractDxfBuilder {
 
     private getColor(style: Style, key: 'stroke' | 'fill'): number | undefined {
         const color = style[key];
+        if (!color) {
+            return undefined;
+        }
         const colorIndex = COLORS.findIndex(values => values.some(val => val === color));
         return colorIndex >= 0 ? colorIndex : undefined;
     }
@@ -109,7 +112,7 @@ export abstract class AbstractDxfBuilder {
         const flags = `${fontBold ? 'b' : ''}${fontItalic ? 'i' : ''}`;
         const result = flags ? `${baseName}_${flags}` : baseName;
         if (result !== 'Standard' && !this.textStyles.has(result)) {
-            //this.document.addStyle(result, fontFamily, fontItalic, fontBold);
+            this.document.addStyle(result, fontFamily);
         }
         return result;
     }
@@ -133,7 +136,7 @@ export abstract class AbstractDxfBuilder {
 
     circle(cx: number, cy: number, r: number, attributes?: Attributes | undefined): void {
         const style = this.getStyle(attributes);
-        if (style.fill) {
+        if (style.fill && style.fill !== 'none') {
             const patternName = this.getFillPattern(style);
             const boundary = new EdgeBoundaryPath();
             boundary.acr(cx, this.convertY(cy), r, 0, 360, true);
@@ -153,7 +156,7 @@ export abstract class AbstractDxfBuilder {
 
     ellipse(cx: number, cy: number, rx: number, ry: number, attributes?: Attributes | undefined): void {
         const style = this.getStyle(attributes);
-        if (style.fill) {
+        if (style.fill && style.fill !== 'none') {
             const patternName = this.getFillPattern(style);
             const boundary = new EdgeBoundaryPath();
             if (rx > ry) {
@@ -194,7 +197,7 @@ export abstract class AbstractDxfBuilder {
     polygon(pts: Point[], attributes?: Attributes | undefined): void {
         const style = this.getStyle(attributes);
         const dxfPts = pts.map(p => [p.x, this.convertY(p.y)] as [number, number]);
-        if (style.fill) {
+        if (style.fill && style.fill !== 'none') {
             const patternName = this.getFillPattern(style);
             const boundary = new PolylineBoundaryPath(dxfPts);
             const pattern = patternName ? this.patterns.get(patternName) : undefined;
@@ -222,7 +225,15 @@ export abstract class AbstractDxfBuilder {
     }
 
     text(text: string, x: number, y: number, align: Alignment, attributes?: Attributes | undefined): void {
-        throw new Error("Method not implemented.");
+        const style = this.getStyle(attributes);
+        if (style.fill !== 'none') {
+            const defaultFontSize = 16;
+            const fontSize = style.fontSize || defaultFontSize;
+            const entity = new Text(this.document, text, fontSize, [x, this.convertY(y)], align as number);
+            entity.style = this.getTextStyle(style);
+            entity.color = this.getColor(style, 'fill');
+            this.document.addEntity(entity);
+        }
     }
 
     region(region: IRegion, attributes?: Attributes | undefined): void {

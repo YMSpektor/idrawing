@@ -21,13 +21,13 @@
   "homepage": "https://github.com/YMSpektor/idrawing#readme",
   "devDependencies": {
     "@types/line-reader": "0.0.28",
-    "@types/node": "^12.12.14",
-    "nodemon": "^2.0.1",
+    "@types/node": "^12.12.17",
+    "nodemon": "^2.0.2",
     "ts-node": "^8.5.4",
     "typescript": "^3.7.3"
   },
   "dependencies": {
-    "dxf-doc": "^0.1.2",
+    "dxf-doc": "^0.1.4",
     "polygon-clipping": "^0.14.3"
   },
   "keywords": [
