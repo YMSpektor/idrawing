@@ -17,8 +17,8 @@ export abstract class AbstractSvgBuilder {
         attributes = attributes || {};
         attributes.x1 = x1;
         attributes.y1 = y1;
-        attributes.x2 = x1;
-        attributes.y2 = y1;
+        attributes.x2 = x2;
+        attributes.y2 = y2;
         this.currentNode.add(new SvgNode('line', attributes));
     }
 
