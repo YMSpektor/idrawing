@@ -4,17 +4,21 @@ import { AbstractDxfBuilder } from "./dxf-builder";
 import { IDrawing } from "..";
 
 export class DxfDrawing extends AbstractDxfBuilder implements IDrawing {
-    private _height: number;
+    private height: number;
 
     constructor(width: number, height: number) {
         super(new DxfDocument());
-        this._height = height;
+        this.height = height;
         this.document.extents([0, 0], [width, height]);
         this.document.limits([0, 0], [width, height]);
     }
 
     protected convertY(y: number): number {
-        return this._height - y;
+        return this.height - y;
+    }
+
+    addStyle(style: string) {
+        throw new Error("Method not implemented."); // TODO
     }
 
     dxf(): string {

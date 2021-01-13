@@ -41,4 +41,6 @@ export interface IDrawing {
 
     createRegion(): IRegion;
     createPath(): IPath;
+
+    addStyle(selector: string, style: string): void;
 }

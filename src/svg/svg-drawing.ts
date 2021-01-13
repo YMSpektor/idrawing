@@ -57,8 +57,8 @@ export class SvgDrawing extends AbstractSvgBuilder implements IDrawing {
         this.defs.add(svgPattern);
     }
 
-    addStyle(svgStyle: string | SvgNode) {
-        this.styles.add(svgStyle);
+    addStyle(selector: string, style: string) {
+        this.styles.add(`${selector} {${style}}`);
     }
 
     svg(): string {
