@@ -3,6 +3,7 @@ import { SvgNode } from "./svg-node";
 import { IDrawing, IRegion, IPath } from "..";
 import { SvgRegion } from "./svg-region";
 import { SvgPath } from "./svg-path";
+import { Attributes } from "../common";
 
 export class SvgDrawing extends AbstractSvgBuilder implements IDrawing {
     private nextRegionId = 0;
@@ -10,17 +11,24 @@ export class SvgDrawing extends AbstractSvgBuilder implements IDrawing {
     private defs: SvgNode;
     private styles: SvgNode;
 
-    constructor (width: number, height: number) {
-        super(new SvgNode('svg', {
-            'version': '1.1',
-            'xmlns': 'http://www.w3.org/2000/svg',
-            'xmlns:xlink': 'http://www.w3.org/1999/xlink',
-            'viewBox': `0 0 ${width} ${height}`
-        }));
+    constructor (size?: {width: number, height: number}) {
+        super(new SvgNode('svg', SvgDrawing.getSvgAttributes(size)));
         this.defs = new SvgNode('defs');
         this.root.add(this.defs);
         this.styles = new SvgNode('style', {type: 'text/css'});
         this.defs.add(this.styles);
+    }
+
+    private static getSvgAttributes(size?: {width: number, height: number}): Attributes {
+        const result: Attributes = {
+            'version': '1.1',
+            'xmlns': 'http://www.w3.org/2000/svg',
+            'xmlns:xlink': 'http://www.w3.org/1999/xlink'
+        };
+        if (size) {
+            result['viewBox'] = `0 0 ${size.width} ${size.height}`;
+        }
+        return result;
     }
 
     private generateRegionId(): string {
