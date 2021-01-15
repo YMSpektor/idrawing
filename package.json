@@ -1,6 +1,6 @@
 {
   "name": "idrawing",
-  "version": "0.1.3",
+  "version": "0.1.6",
   "description": "Provides a common abstract interface for drawing. The resulting format depends on the chosen interface implementation (SVG, DXF - planned)",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",

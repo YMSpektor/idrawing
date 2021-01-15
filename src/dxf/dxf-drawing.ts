@@ -1,7 +1,7 @@
 import { DxfDocument } from "dxf-doc";
 
 import { AbstractDxfBuilder } from "./dxf-builder";
-import { IDrawing } from "..";
+import { IDrawing, IRegion } from "..";
 
 export class DxfDrawing extends AbstractDxfBuilder implements IDrawing {
     private height: number;
@@ -15,6 +15,10 @@ export class DxfDrawing extends AbstractDxfBuilder implements IDrawing {
 
     protected convertY(y: number): number {
         return this.height - y;
+    }
+
+    clip(region: IRegion, callback: () => void) {
+        throw new Error("Method not implemented."); // TODO
     }
 
     addStyle(style: string) {

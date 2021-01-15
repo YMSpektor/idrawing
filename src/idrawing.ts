@@ -39,6 +39,8 @@ export interface IDrawing {
     region(region: IRegion, attributes?: Attributes): void;
     path(path: IPath, attributes?: Attributes): void;
 
+    clip(region: IRegion, callback: () => void): void;
+
     createRegion(): IRegion;
     createPath(): IPath;
 

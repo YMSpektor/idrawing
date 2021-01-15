@@ -14,7 +14,7 @@ export abstract class AbstractSvgBuilder {
     }
 
     line(x1: number, y1: number, x2: number, y2: number, attributes?: Attributes): void {
-        attributes = attributes || {};
+        attributes = attributes ? {...attributes} : {};
         attributes.x1 = x1;
         attributes.y1 = y1;
         attributes.x2 = x2;
@@ -23,7 +23,7 @@ export abstract class AbstractSvgBuilder {
     }
 
     rect(x: number, y: number, width: number, height: number, attributes?: Attributes): void {
-        attributes = attributes || {};
+        attributes = attributes ? {...attributes} : {};
         attributes.x = x;
         attributes.y = y;
         attributes.width = width;
@@ -32,7 +32,7 @@ export abstract class AbstractSvgBuilder {
     }
 
     circle(cx: number, cy: number, r: number, attributes?: Attributes): void {
-        attributes = attributes || {};
+        attributes = attributes ? {...attributes} : {};
         attributes.cx = cx;
         attributes.cy = cy;
         attributes.r = r;
@@ -40,7 +40,7 @@ export abstract class AbstractSvgBuilder {
     }
 
     ellipse(cx: number, cy: number, rx: number, ry: number, attributes?: Attributes): void {
-        attributes = attributes || {};
+        attributes = attributes ? {...attributes} : {};
         attributes.cx = cx;
         attributes.cy = cy;
         attributes.rx = rx;
@@ -49,19 +49,19 @@ export abstract class AbstractSvgBuilder {
     }
 
     polyline(pts: Point[], attributes?: Attributes): void {
-        attributes = attributes || {};
+        attributes = attributes ? {...attributes} : {};
         attributes.points = pts.reduce((acc, p) => `${acc} ${p.x},${p.y}`, '').trim();
         this.currentNode.add(new SvgNode('polyline', attributes));
     }
 
     polygon(pts: Point[], attributes?: Attributes): void {
-        attributes = attributes || {};
+        attributes = attributes ? {...attributes} : {};
         attributes.points = pts.reduce((acc, p) => `${acc} ${p.x},${p.y}`, '').trim();
         this.currentNode.add(new SvgNode('polygon', attributes));
     }
 
     polybezier(pts: Point[], attributes?: Attributes): void {
-        attributes = attributes || {};
+        attributes = attributes ? {...attributes} : {};
         attributes.d = pts.reduce((acc, point, i) => i === 0
             ? `M${point.x},${point.y}`
             : `${acc} ${(i - 1) % 3 === 0 ? 'C' : ''}${point.x},${point.y}`
@@ -75,7 +75,7 @@ export abstract class AbstractSvgBuilder {
     }
 
     text(text: string, x: number, y: number, align: Alignment, attributes?: Attributes): void {
-        attributes = attributes || {};
+        attributes = attributes ? {...attributes} : {};
         attributes.x = x;
         attributes.y = y;
         attributes['text-anchor'] = Alignment[align].toLowerCase();
@@ -87,7 +87,7 @@ export abstract class AbstractSvgBuilder {
     region(region: IRegion, attributes?: Attributes): void {
         this.clip(region, () => {
             const bounds = region.getBounds();
-            attributes = attributes || {};
+            attributes = attributes ? {...attributes} : {};
             attributes.style = `stroke: none`;
             this.rect(bounds.x1, bounds.y1, bounds.x2 - bounds.x1, bounds.y2 - bounds.y1, attributes);
         });
@@ -95,7 +95,7 @@ export abstract class AbstractSvgBuilder {
 
     path(path: IPath, attributes?: Attributes): void {
         const svgPath = path as SvgPath;
-        attributes = attributes || {};
+        attributes = attributes ? {...attributes} : {};
         const pathNode = new SvgNode('use', {...attributes, 'xlink:href': `#${svgPath.id}`});
         this.currentNode.add(pathNode);
     }

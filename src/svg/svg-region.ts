@@ -34,27 +34,27 @@ class SvgRegionData implements IRegionData {
     rect(x: number, y: number, width: number, height: number): void {
         this.addPoint(x, y);
         this.addPoint(x + width, y + height);
-        this.builder.rect(x, y, width, height, {stroke: 'none', fill: this.fill});
+        this.builder.rect(x, y, width, height, { style: `stroke: 'none'; fill: ${this.fill}` });
         this.polygons.push([[[x,y],[x + width,y],[x + width,y + height],[x,y + height]]]);
     }
 
     circle(cx: number, cy: number, r: number): void {
         this.addPoint(cx - r, cy - r);
         this.addPoint(cx + r, cy + r);
-        this.builder.circle(cx, cy, r, {stroke: 'none', fill: this.fill});
+        this.builder.circle(cx, cy, r, { style: `stroke: 'none'; fill: ${this.fill}` });
         this.polygons.push(this.ptsToPolygon(Geometry.approximateEllipse(cx, cy, r, r, DRAWING_SETTINGS.APPROX_ELLIPSE_LINES)));
     }
 
     ellipse(cx: number, cy: number, rx: number, ry: number): void {
         this.addPoint(cx - rx, cy - ry);
         this.addPoint(cx + rx, cy + ry);
-        this.builder.ellipse(cx, cy, rx, ry, {stroke: 'none', fill: this.fill});
+        this.builder.ellipse(cx, cy, rx, ry, { style: `stroke: 'none'; fill: ${this.fill}` });
         this.polygons.push(this.ptsToPolygon(Geometry.approximateEllipse(cx, cy, rx, ry, DRAWING_SETTINGS.APPROX_ELLIPSE_LINES)));
     }
 
     polygon(pts: Point[]): void {
         pts.forEach(x => this.addPoint(x.x, x.y));
-        this.builder.polygon(pts, {stroke: 'none', fill: this.fill});
+        this.builder.polygon(pts, { style: `stroke: 'none'; fill: ${this.fill}` });
         this.polygons.push(this.ptsToPolygon(pts));
     }
 
@@ -62,12 +62,12 @@ class SvgRegionData implements IRegionData {
         pts = Geometry.curveToPolybezier(pts, true, smoothing);
         const approxPts = Geometry.approximatePolybezier(pts, DRAWING_SETTINGS.APPROX_CURVE_MAX_DEVIATION);
         approxPts.forEach(x => this.addPoint(x.x, x.y));
-        this.builder.polybezier(pts, {stroke: 'none', fill: this.fill});
+        this.builder.polybezier(pts, { style: `stroke: 'none'; fill: ${this.fill}` });
         this.polygons.push(this.ptsToPolygon(approxPts));
     }
 
     path(path: IPath): void {
-        this.builder.path(path, {stroke: 'none', fill: this.fill});
+        this.builder.path(path, { style: `stroke: 'none'; fill: ${this.fill}` });
         const svgPath = path as SvgPath;
         const pathPolygons = svgPath.getPolygons();
         pathPolygons.forEach(polygon => {
