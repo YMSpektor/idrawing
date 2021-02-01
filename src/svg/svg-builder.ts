@@ -74,11 +74,14 @@ export abstract class AbstractSvgBuilder {
         this.polybezier(pts, attributes);
     }
 
-    text(text: string, x: number, y: number, align: Alignment, attributes?: Attributes): void {
+    text(text: string, x: number, y: number, align: Alignment, rotation?: number, attributes?: Attributes): void {
         attributes = attributes ? {...attributes} : {};
         attributes.x = x;
         attributes.y = y;
         attributes['text-anchor'] = Alignment[align].toLowerCase();
+        if (rotation) {
+            attributes['transform'] = `rotate(${rotation} ${x} ${y})`;
+        }
         const textNode = new SvgNode('text', attributes);
         textNode.add(text);
         this.currentNode.add(textNode);

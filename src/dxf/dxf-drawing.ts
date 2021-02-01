@@ -25,6 +25,10 @@ export class DxfDrawing extends AbstractDxfBuilder implements IDrawing {
         throw new Error("Method not implemented."); // TODO
     }
 
+    getStyle(selector: string): string | undefined {
+        throw new Error("Method not implemented.");
+    }
+
     dxf(): string {
         return this.document.dxf();
     }

@@ -35,7 +35,7 @@ export interface IDrawing {
     polygon(pts: Point[], attributes?: Attributes): void;
     polybezier(pts: Point[], attributes?: Attributes): void;
     curve(pts: Point[], closed?: boolean, smoothing?: number, attributes?: Attributes): void;
-    text(text: string, x: number, y: number, align: Alignment, attributes?: Attributes): void;
+    text(text: string, x: number, y: number, align: Alignment, rotation?: number, attributes?: Attributes): void;
     region(region: IRegion, attributes?: Attributes): void;
     path(path: IPath, attributes?: Attributes): void;
 
@@ -45,4 +45,5 @@ export interface IDrawing {
     createPath(): IPath;
 
     addStyle(selector: string, style: string): void;
+    getStyle(selector: string): string | undefined;
 }

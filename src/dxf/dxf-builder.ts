@@ -38,7 +38,7 @@ export abstract class AbstractDxfBuilder {
 
     constructor(protected document: DxfDocument) { }
 
-    private getStyle(attributes?: Attributes): Style {
+    private extractStyle(attributes?: Attributes): Style {
         const style: Style = {};
         if (attributes) {
             style.stroke = attributes.stroke;
@@ -120,7 +120,7 @@ export abstract class AbstractDxfBuilder {
     protected abstract convertY(y: number): number;
 
     line(x1: number, y1: number, x2: number, y2: number, attributes?: Attributes): void {
-        const style = this.getStyle(attributes);
+        const style = this.extractStyle(attributes);
         if (style.stroke !== 'none') {
             const entity = new Line(this.document, x1, this.convertY(y1), x2, this.convertY(y2));
             entity.ltype = this.getLType(style);
@@ -135,7 +135,7 @@ export abstract class AbstractDxfBuilder {
     }
 
     circle(cx: number, cy: number, r: number, attributes?: Attributes | undefined): void {
-        const style = this.getStyle(attributes);
+        const style = this.extractStyle(attributes);
         if (style.fill && style.fill !== 'none') {
             const patternName = this.getFillPattern(style);
             const boundary = new EdgeBoundaryPath();
@@ -155,7 +155,7 @@ export abstract class AbstractDxfBuilder {
     }
 
     ellipse(cx: number, cy: number, rx: number, ry: number, attributes?: Attributes | undefined): void {
-        const style = this.getStyle(attributes);
+        const style = this.extractStyle(attributes);
         if (style.fill && style.fill !== 'none') {
             const patternName = this.getFillPattern(style);
             const boundary = new EdgeBoundaryPath();
@@ -184,7 +184,7 @@ export abstract class AbstractDxfBuilder {
     }
 
     polyline(pts: Point[], attributes?: Attributes | undefined): void {
-        const style = this.getStyle(attributes);
+        const style = this.extractStyle(attributes);
         if (style.stroke !== 'none') {
             const entity = new LwPolyline(this.document, pts.map(p => [p.x, this.convertY(p.y)] as [number, number]), false);
             entity.ltype = this.getLType(style);
@@ -195,7 +195,7 @@ export abstract class AbstractDxfBuilder {
     }
 
     polygon(pts: Point[], attributes?: Attributes | undefined): void {
-        const style = this.getStyle(attributes);
+        const style = this.extractStyle(attributes);
         const dxfPts = pts.map(p => [p.x, this.convertY(p.y)] as [number, number]);
         if (style.fill && style.fill !== 'none') {
             const patternName = this.getFillPattern(style);
@@ -224,14 +224,17 @@ export abstract class AbstractDxfBuilder {
         this.polybezier(pts);
     }
 
-    text(text: string, x: number, y: number, align: Alignment, attributes?: Attributes | undefined): void {
-        const style = this.getStyle(attributes);
+    text(text: string, x: number, y: number, align: Alignment, rotation?: number, attributes?: Attributes | undefined): void {
+        const style = this.extractStyle(attributes);
         if (style.fill !== 'none') {
             const defaultFontSize = 16;
             const fontSize = style.fontSize || defaultFontSize;
             const entity = new Text(this.document, text, fontSize, [x, this.convertY(y)], align as number);
             entity.style = this.getTextStyle(style);
             entity.color = this.getColor(style, 'fill');
+            if (rotation) {
+                entity.rotation = rotation;
+            } 
             this.document.addEntity(entity);
         }
     }

@@ -10,6 +10,7 @@ export class SvgDrawing extends AbstractSvgBuilder implements IDrawing {
     private nextPathId = 0;
     private defs: SvgNode;
     private styles: SvgNode;
+    private stylesMap = new Map<string, string>();
 
     constructor (size?: {width: number, height: number}) {
         super(new SvgNode('svg', SvgDrawing.getSvgAttributes(size)));
@@ -58,7 +59,19 @@ export class SvgDrawing extends AbstractSvgBuilder implements IDrawing {
     }
 
     addStyle(selector: string, style: string) {
+        if (this.stylesMap.has(selector)) {
+            let value = this.stylesMap.get(selector)!;
+            value = `${value};${style}`;
+            this.stylesMap.set(selector, value);
+        }
+        else {
+            this.stylesMap.set(selector, style);
+        }
         this.styles.add(`${selector} {${style}}`);
+    }
+
+    getStyle(selector: string): string | undefined {
+        return this.stylesMap.get(selector);
     }
 
     svg(): string {
